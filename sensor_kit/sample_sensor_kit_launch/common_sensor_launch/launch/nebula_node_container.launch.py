@@ -238,7 +238,7 @@ def launch_setup(context, *args, **kwargs):
     container = ComposableNodeContainer(
         name=LaunchConfiguration("container_name"),
         namespace="pointcloud_preprocessor",
-        package="rclcpp_components",
+        package=LaunchConfiguration("container_package"),
         executable=LaunchConfiguration("container_executable"),
         composable_node_descriptions=nodes,
         output="both",
@@ -310,15 +310,25 @@ def generate_launch_description():
         "component_container",
         condition=UnlessCondition(LaunchConfiguration("use_multithread")),
     )
+    set_container_package = SetLaunchConfiguration(
+        "container_package",
+        "rclcpp_components",
+        condition=UnlessCondition(LaunchConfiguration("use_multithread")),
+    )
 
     set_container_mt_executable = SetLaunchConfiguration(
         "container_executable",
-        "component_container_mt",
+        "agnocast_component_container_cie",
+        condition=IfCondition(LaunchConfiguration("use_multithread")),
+    )
+    set_container_mt_package = SetLaunchConfiguration(
+        "container_package",
+        "agnocast_components",
         condition=IfCondition(LaunchConfiguration("use_multithread")),
     )
 
     return launch.LaunchDescription(
         launch_arguments
-        + [set_container_executable, set_container_mt_executable]
+        + [set_container_executable, set_container_package, set_container_mt_executable, set_container_mt_package]
         + [OpaqueFunction(function=launch_setup)]
     )
